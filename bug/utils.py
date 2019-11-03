@@ -37,4 +37,7 @@ class tars(object):
 
     def run(self, cmd):
         res = [x.strip() for x in cmd.split()]
-        return self.commands[res[0]](*res[1:])
+        if res[0] in self.commands:
+            return self.commands[res[0]](*res[1:])
+        else:
+            return f"tars command '{res[0]}' is not defined"
