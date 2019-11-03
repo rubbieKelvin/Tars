@@ -1,19 +1,9 @@
-import socketio
+import socket, threading
 
-sio = socketio.Client()
-
-@sio.on('connect')
-def on_connect():
-	print('connection established')
-
-@sio.on('my message')
-def on_message(data):
-	print('message received with ', data)
-	sio.emit('my response', {'response': 'my response'})
-
-@sio.on('disconnect')
-def on_disconnect():
-	print('disconnected from server')
-
-sio.connect('http://rubbie-io:959')
-sio.wait()
+class Hacker(object):
+	"""docstring for Hacker."""
+	def __init__(self, host, port=959):
+		super(Hacker, self).__init__()
+		self.host = host
+		self.port = port
+		self.sock = socket.socket()
