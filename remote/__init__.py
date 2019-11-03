@@ -15,6 +15,7 @@ class Remote(object):
 		print('connected')
 		while self.running:
 			command = input('tars> ')
+			if not command: continue
 			s.sendall(bytes(command, 'utf8'))
 			res = s.recv(1024)
 			if res != b'0':
