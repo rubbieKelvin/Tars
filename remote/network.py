@@ -1,3 +1,4 @@
+import os
 import socket
 import threading
 
@@ -9,7 +10,9 @@ with socket.socket() as sock:
 
     while True:
         cmd = input(">>> ")
-        sock.sendall(bytes(cmd, "utf8"))
+        try: sock.sendall(bytes(cmd, "utf8"))
+        except ConnectionAbortedError as e: break
         if cmd == ".exit": break
-        data = sock.recv(1024)
+        try: data = sock.recv(1024)
+        except ConnectionAbortedError as e: break
         print(data)
