@@ -6,7 +6,10 @@ port = 959
 
 with socket.socket() as sock:
     sock.connect((host, port))
-    sock.sendall(b"helloword")
-    data = sock.recv(1024)
-    sock.sendall(b".exit")
-print("recieved", repr(data))
+
+    while True:
+        cmd = input(">>> ")
+        sock.sendall(bytes(cmd, "utf8"))
+        if cmd == ".exit": break
+        data = sock.recv(1024)
+        print(data)
