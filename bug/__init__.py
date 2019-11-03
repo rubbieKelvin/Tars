@@ -1,25 +1,15 @@
-import socketio
-import eventlet
-import socket
+from .network import server
+from .utils import interpreter
 
-sio = socketio.Server()
-app = socketio.WSGIApp(sio)
+s = server()
+i = interpreter()
 
-class data:
-	busy = False
+def cmdrecv(cmd, conn):
+    res = i.interprete(cmd)
+    conn.sendall(res)
 
-@sio.on('connect')
-def connect(sid, environ):
-	if data.busy:
-		sid.disconnect()
-	else:
-		data.busy = True
-	print('connect ', sid)
+s.onCommandRecieved = cmdrecv
 
-@sio.on('disconnect')
-def disconnect(sid):
-	print('disconnect ', sid)
-
-
-
-eventlet.wsgi.server(eventlet.listen((socket.gethostname(), 959)), app)
+@s.onhotspot
+def serve():
+    s.serve()

@@ -1,49 +1,38 @@
-import selectors
-import socket
-import types
+import socket, time
 
-class Network:
+class server:
     def __init__(self):
-        self.sel = None
-        self.sock = None
         self.host = socket.gethostname()
         self.port = 959
+        self.sock = None
+        self.onCommandRecieved = None
 
-    def run_(self):
-        self.sel = selectors.DefaultSelector()
-        self.sock = socket.socket()
-        self.sock.bind((self.host, self.port))
-        self.sock.listen()
-        self.sock.setblocking(False)
-        self.sel.register(self.sock, selectors.EVENT_READ, data=None)
-
-        # loop
+    def onhotspot(self, func):
         while True:
-            events = self.sel.select(timeout=None)
-            for key, mask in events:
-                self.acceptwrapper(key.fileobj)
+            self.host = socket.gethostname()
+            host = socket.gethostbyname(self.host)
+            if host not in ["localhost", "127.0.0.1"]:
+                if self.sock is None:
+                    print(self.host)
+                    func()
             else:
-                self.serviceconn(key, mask)
+                self.cutserver()
+            time.sleep(5)
 
-    def acceptwrapper(self, sock):
-        conn, addr = sock.accept()
-        conn.setblocking(False)
-        data = types.SimpleNampespace(addr=addr, inb=b"", outb=b"")
-        events = selectors.EVENT_READ | selectors.EVENT_WRITE
-        self.sel.register(conn, events, data=data)
+    def cutserver(self):
+        if self.sock is not None: self.sock.close()
 
-    def serviceconn(self, key, mask):
-        sock = key.fileobj
-        data = key.data
-
-        if mask and selectors.EVENT_READ:
-            rdata = sock.recv(1024)
-            if rdata:
-                data.outb += rdata
-            else:
-                self.sel.unregister(sock)
-                sock.close()
-        if mask and selectors.EVENT_WRITE:
-            if data.outb:
-                sent = sock.send(data.outb)
-                data.outb = data.outb[sent:]
+    def serve(self):
+        while True:
+            with socket.socket() as self.sock:
+                self.sock.bind((self.host, self.port))
+                self.sock.listen()
+                conn, addr = self.sock.accept()
+                with conn:
+                    print("connected to", addr)
+                    while True:
+                        cmd = conn.recv(1024)
+                        if not cmd or cmd == b".exit" : break
+                        # process data
+                        if self.onCommandRecieved is not None: self.onCommandRecieved(cmd, conn)
+            self.sock = None
