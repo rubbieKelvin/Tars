@@ -20,3 +20,5 @@ run the <span style="color: skyblue">remote</span> hacker tool with:
 ```bash
 python -m remote
 ```
+
+*<span style="color:#bdbdbd; font-size:12px">command line argument would be made later when the project reaches a stable stage</span>

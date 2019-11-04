@@ -1,7 +1,14 @@
 import os
 import sys
 import json
-import mslex
+try:
+	import mslex
+except ModuleNotFoundError:
+	# this is for temporary reasons, and is not recomended
+	class mslex(object):
+		def split(command):
+			return command.split()
+
 import subprocess
 
 class Commands(object):
@@ -36,9 +43,5 @@ class Commands(object):
 		try:
 			res = subprocess.check_output(command, shell=True)
 		except subprocess.CalledProcessError as e:
-			error = e.decode("utf8")
-			if error.startswith('error: {'):
-				error = json.loads(error[7:]) # Skip "error: "
-				return error['message']
 			return "error running command"
 		return res.decode("utf8")
