@@ -1,15 +1,20 @@
-import os, sys
+import os
+import sys
+import json
+import mslex
+import subprocess
 
 class Commands(object):
 	"""docstring for Commands."""
 	def __init__(self):
 		super(Commands, self).__init__()
 
-	def interprete(self, cmd_):
+	def interprete(self, cmd):
 		# break down Commands
 		# command syntax: <shell> <command> <arg1> <arg2> <argn>
 		# where shell = 'tars' or 'shell'
-		cmd = cmd_.split()
+		cmd = mslex.split(cmd)
+		if len(cmd) < 2: return "invalid command"
 
 		# take fragments
 		shell = cmd[0]
@@ -19,7 +24,7 @@ class Commands(object):
 		if shell == "tars":
 			res = self.runtars(command, args)
 		elif shell == "shell":
-			res = self.runshell(cmd_[6:])
+			res = self.runshell(cmd[1:])
 		else:
 			res = f"error: shell type '{shell}' does not exist"
 		return res
@@ -28,5 +33,12 @@ class Commands(object):
 		return f"tars says {command}"
 
 	def runshell(self, command, encoding="utf8"):
-		in, res, err = os.popen3(command)
-		return res.read().strip()+err.read().strip()
+		try:
+			res = subprocess.check_output(command, shell=True)
+		except subprocess.CalledProcessError as e:
+			error = e.decode("utf8")
+			if error.startswith('error: {'):
+				error = json.loads(error[7:]) # Skip "error: "
+				return error['message']
+			return "error running command"
+		return res.decode("utf8")

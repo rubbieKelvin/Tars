@@ -16,9 +16,13 @@ class Remote(object):
 		while self.running:
 			command = input('tars> ')
 			if not command: continue
-			s.sendall(bytes(command, 'utf8'))
-			res = s.recv(1024)
-			if res != b'0':
-				print(res.decode('utf8'))
+			if command == "exit": break
+			try:
+				s.sendall(bytes(command, 'utf8'))
+				res = s.recv(1024)
+			except (ConnectionAbortedError, ConnectionResetError) as e:
+				print("bug desconnected")
+				break
+			print(res.decode('utf8'))
 		s.close()
 		sys.exit(0)
